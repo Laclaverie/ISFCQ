@@ -1,0 +1,60 @@
+name: Build and Test Unreal Engine 5.4 Project
+
+on:
+  push:
+    branches:
+      - main  # Déclenchement des tests lors d'un push sur `main`
+  pull_request:
+    branches:
+      - main  # Déclenchement des tests lors de la création d'une PR vers `main`
+
+jobs:
+  build:
+    runs-on: windows-latest  # Utilise un runner Windows pour Unreal Engine
+    strategy:
+      matrix:
+        os: [windows-latest]  # Utilisation de Windows, car Unreal Engine tourne mieux dessus
+
+    steps:
+    # 1. Checkout du code source
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # 2. Setup Unreal Engine 5.4
+    - name: Setup Unreal Engine 5.4
+      uses: unrealengine/setup-ue@v1
+      with:
+        version: '5.4'
+
+    # 3. Cache Unreal Engine dependencies and intermediate files
+    - name: Cache Unreal Engine dependencies
+      uses: actions/cache@v2
+      with:
+        # Spécifie le dossier de cache à utiliser (par exemple, les fichiers binaires de l'engine)
+        path: |
+          C:\ProgramData\Epic\UnrealEngine\Common\DerivedDataCache
+          C:\Program Files\Epic Games\UE_5.4\Engine\Binaries\Win64
+          C:\Users\runneradmin\AppData\Local\UnrealEngine\Common\DerivedDataCache
+        key: ${{ runner.os }}-unreal-${{ hashFiles('**/*.uproject') }}
+
+    # 4. Installer les dépendances (si nécessaire)
+    - name: Install dependencies
+      run: |
+        echo "Installer les dépendances nécessaires ici si nécessaire"
+
+    # 5. Build du projet ISFCQ
+    - name: Build ISFCQ Project
+      run: |
+        "C:\Program Files\Epic Games\UE_5.4\Engine\Build\BatchFiles\Build.bat" ISFCQEditor Win64 Development
+
+    # 6. Exécution des tests unitaires (sans démarrer l'éditeur)
+    - name: Run Unit Tests
+      run: |
+        # "C:\Program Files\Epic Games\UE_5.4\Engine\Binaries\Win64\UE4Editor-Cmd.exe" ISFCQ -run=UnitTest
+        echo "Ici on run les unittest mais il n'y en a pas pour le moment"
+
+    # 7. Exécution des tests fonctionnels (qui nécessitent l'éditeur)
+    - name: Run Functional Tests
+      run: |
+        # "C:\Program Files\Epic Games\UE_5.4\Engine\Binaries\Win64\UE4Editor-Cmd.exe" ISFCQ -run=AutomationTest
+        echo "Ici on run les Functional Tests mais il n'y en a pas pour le moment"
